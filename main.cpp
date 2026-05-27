@@ -4,7 +4,7 @@
 #include <sys/types.h>
 #include <vector>
 #include <fstream>
-
+#define REVERSE_BYTES(x) __builtin_bswap32(x)
 
 bool validateFileOpen(const std::ifstream& input);
 
@@ -26,13 +26,15 @@ int main() {
     uint32_t count;
     label_data.read(reinterpret_cast<char*>(&magic), 4);
     label_data.read(reinterpret_cast<char*>(&count), 4);
-    
+    // header is in big endian, i need to it to be in little endian
+    magic = REVERSE_BYTES(magic);
+    count = REVERSE_BYTES(count);
     // parse the payload
-    uint8_t pixel;
+    uint8_t label;
     std::vector<u_int8_t> label_vector(count, 0);
-    for (int i = 0; i < count; i++) {
-        label_data.read(reinterpret_cast<char*>(pixel), 1);
-        label_vector[i] = pixel;
+    for (uint32_t i = 0; i < count; i++) {
+        label_data.read(reinterpret_cast<char*>(&label), 1);
+        label_vector[i] = label;
     }
 
 
@@ -44,4 +46,5 @@ bool validateFileOpen(const std::ifstream& input) {
     if (!input.is_open()) {
         return false;
     }
+    return true;
 }

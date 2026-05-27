@@ -1,3 +1,3 @@
-g++ main.cpp -o main
+g++ -Wall main.cpp -o main
 
 
