@@ -14,9 +14,9 @@ int main() {
     const std::string train_images = "./dataset/train-images.idx3-ubyte";
     
     std::ifstream label_data(train_label, std::ios::binary);
-    std::ifstream train_data(train_images, std::ios::binary);
+    std::ifstream image_data(train_images, std::ios::binary);
 
-    if (!validateFileOpen(train_data) || !validateFileOpen(label_data)) {
+    if (!validateFileOpen(image_data) || !validateFileOpen(label_data)) {
         std::cerr << "Cannot open image/label files\n";
         return 1;
     }
@@ -37,8 +37,30 @@ int main() {
         label_vector[i] = label;
     }
 
-    
+    // parse the header for image_data
+    image_data.read(reinterpret_cast<char*>(&magic),4);
+    // magic info
+        // 1) each number is a bit (2^8 so use u_int8_t)
+        // 2) data has three dimensions
+    constexpr int NUM_IMAGE = 60000;
+    constexpr int NUM_ROW = 28;
+    constexpr int NUM_COL = 28;
 
+    u_int8_t pixel_value;
+    std::vector<std::vector<std::vector<uint8_t>>> image_vector(
+        NUM_IMAGE, std::vector<std::vector<uint8_t>> (
+            NUM_ROW, std::vector<uint8_t> (NUM_COL,0)
+        )
+    );
+
+    for (int image = 0; image < NUM_IMAGE; image++) {
+        for (int row = 0; row < NUM_ROW; row++) {
+            for (int col = 0; col < NUM_COL; col++) {
+                image_data.read(reinterpret_cast<char*>(&pixel_value), 1);
+                image_vector[image][row][col] = pixel_value;
+            }
+        }
+    }
 
     return 0;
 }
