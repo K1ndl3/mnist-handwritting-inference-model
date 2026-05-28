@@ -38,13 +38,18 @@ int main() {
     }
 
     // parse the header for image_data
+    uint32_t NUM_IMAGE;
+    uint32_t NUM_ROW;
+    uint32_t NUM_COL;
+
     image_data.read(reinterpret_cast<char*>(&magic),4);
-    // magic info
-        // 1) each number is a bit (2^8 so use u_int8_t)
-        // 2) data has three dimensions
-    constexpr int NUM_IMAGE = 60000;
-    constexpr int NUM_ROW = 28;
-    constexpr int NUM_COL = 28;
+    image_data.read(reinterpret_cast<char*>(&NUM_IMAGE),4);
+    image_data.read(reinterpret_cast<char*>(&NUM_ROW),4);
+    image_data.read(reinterpret_cast<char*>(&NUM_COL),4);
+    
+    NUM_IMAGE = REVERSE_BYTES(NUM_IMAGE);
+    NUM_ROW = REVERSE_BYTES(NUM_ROW);
+    NUM_COL = REVERSE_BYTES(NUM_COL);
 
     u_int8_t pixel_value;
     std::vector<std::vector<std::vector<uint8_t>>> image_vector(
