@@ -7,6 +7,7 @@
 #define REVERSE_BYTES(x) __builtin_bswap32(x)
 
 bool validateFileOpen(const std::ifstream& input);
+double relu(double input);
 
 int main() {
     // data for training
@@ -51,22 +52,32 @@ int main() {
     NUM_ROW = REVERSE_BYTES(NUM_ROW);
     NUM_COL = REVERSE_BYTES(NUM_COL);
 
-    u_int8_t pixel_value;
-    std::vector<std::vector<std::vector<uint8_t>>> image_vector(
-        NUM_IMAGE, std::vector<std::vector<uint8_t>> (
-            NUM_ROW, std::vector<uint8_t> (NUM_COL,0)
-        )
+    const uint32_t pixels_per_image = NUM_ROW * NUM_COL;
+    uint8_t pixel_value;
+    std::vector<std::vector<uint8_t>> image_vector(
+        NUM_IMAGE, std::vector<uint8_t>(pixels_per_image, 0)
     );
 
-    for (int image = 0; image < NUM_IMAGE; image++) {
-        for (int row = 0; row < NUM_ROW; row++) {
-            for (int col = 0; col < NUM_COL; col++) {
+    for (uint32_t image = 0; image < NUM_IMAGE; image++) {
+        for (uint32_t row = 0; row < NUM_ROW; row++) {
+            for (uint32_t col = 0; col < NUM_COL; col++) {
                 image_data.read(reinterpret_cast<char*>(&pixel_value), 1);
-                image_vector[image][row][col] = pixel_value;
+                image_vector[image][row * NUM_COL + col] = pixel_value;
             }
         }
     }
+    // start on the feedforward
 
+    // layer 1
+    std::vector<double> layer1(128, 0.1);
+    std::vector<std::vector<double>> weight1(128, std::vector<double>(784, .1));
+    std::vector<double> bias1(128, 0.1);
+    
+    // layer 2
+    std::vector<double> output_layer(10, .1);
+    std::vector<std::vector<double>> weight2(10, std::vector<double>(128, .01));
+    std::vector<double> bias2(10, .1);
+    
     return 0;
 }
 
@@ -75,4 +86,8 @@ bool validateFileOpen(const std::ifstream& input) {
         return false;
     }
     return true;
+}
+
+double relu(double input) {
+    return std::max(0.0,input);
 }
