@@ -98,32 +98,32 @@ int main() {
 
     // normalize the image vector to doubles
     // this only does one image
-    std::vector<double> x(pixels_per_image);
-    for (uint32_t i = 0; i < pixels_per_image; i++) {
-        x[i] = static_cast<double>(image_vector[0][i]) / 255.0;
-    }
-    
-
-    // forward pass layer 1
-    for (int row = 0; row < HIDDEN_SIZE; row++) {
-        double weighted_sum =  bias1[row];
-        for (int col = 0; col < INPUT_SIZE; col++) {
-            weighted_sum += x[col] * weight1[row][col];
+    std::vector<std::vector<double>> x(NUM_IMAGE, std::vector<double>(pixels_per_image));
+    for (int im = 0; im < NUM_IMAGE; im++) {
+        for (uint32_t i = 0; i < pixels_per_image; i++) {
+            x[im][i] = static_cast<double>(image_vector[im][i]) / 255.0;
         }
-        layer1[row] = relu(weighted_sum);
     }
 
-    // forward pass layer 2
-    for (int row = 0; row < OUTPUT_SIZE; row++) {
-        double weighted_sum = bias2[row];
-        for (int col = 0; col < HIDDEN_SIZE; col++) {
-            weighted_sum += layer1[col] * weight2[row][col];
+    for (int im = 0; im < NUM_IMAGE; im++) {
+        // forward pass layer 1
+        for (int row = 0; row < HIDDEN_SIZE; row++) {
+            double weighted_sum =  bias1[row];
+            for (int col = 0; col < INPUT_SIZE; col++) {
+                weighted_sum += x[im][col] * weight1[row][col];
+            }
+            layer1[row] = relu(weighted_sum);
+            // forward pass layer 2
         }
-        output_layer[row] = weighted_sum;
+        for (int row = 0; row < OUTPUT_SIZE; row++) {
+            double weighted_sum = bias2[row];
+            for (int col = 0; col < HIDDEN_SIZE; col++) {
+                weighted_sum += layer1[col] * weight2[row][col];
+            }
+            output_layer[row] = weighted_sum;
+        }
     }
-    for (auto num : output_layer) {
-        std::cout << num << '\n'; 
-    }
+
     return 0;
 }
 
