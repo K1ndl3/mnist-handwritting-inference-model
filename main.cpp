@@ -4,7 +4,12 @@
 #include <sys/types.h>
 #include <vector>
 #include <fstream>
+#include <algorithm>
 #define REVERSE_BYTES(x) __builtin_bswap32(x)
+
+constexpr int INPUT_SIZE = 784;
+constexpr int HIDDEN_SIZE = 128;
+constexpr int OUTPUT_SIZE = 10;
 
 bool validateFileOpen(const std::ifstream& input);
 double relu(double input);
@@ -69,14 +74,28 @@ int main() {
     // start on the feedforward
 
     // layer 1
-    std::vector<double> layer1(128, 0.1);
-    std::vector<std::vector<double>> weight1(128, std::vector<double>(784, .1));
-    std::vector<double> bias1(128, 0.1);
-    
+    std::vector<double> layer1(HIDDEN_SIZE, 0.1);
+    std::vector<std::vector<double>> weight1(
+        HIDDEN_SIZE, std::vector<double>(INPUT_SIZE, 0.1));
+    std::vector<double> bias1(HIDDEN_SIZE, 0.1);
+
     // layer 2
-    std::vector<double> output_layer(10, .1);
-    std::vector<std::vector<double>> weight2(10, std::vector<double>(128, .01));
-    std::vector<double> bias2(10, .1);
+    std::vector<double> output_layer(OUTPUT_SIZE, 0.1);
+    std::vector<std::vector<double>> weight2(
+        OUTPUT_SIZE, std::vector<double>(HIDDEN_SIZE, 0.01));
+    std::vector<double> bias2(OUTPUT_SIZE, 0.1);
+
+
+    // normalize the image vector to doubles
+    // this only does one image
+    std::vector<double> x(pixels_per_image);
+    for (uint32_t i = 0; i < pixels_per_image; i++) {
+        x[i] = static_cast<double>(image_vector[0][i]) / 255.0;
+    }
+
+    for (uint32_t i = 0; i < pixels_per_image; i++) {
+        std::cout << x[i] << '\n';
+    }
     
     return 0;
 }
