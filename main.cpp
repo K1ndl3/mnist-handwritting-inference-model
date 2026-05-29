@@ -5,12 +5,15 @@
 #include <vector>
 #include <fstream>
 #include <algorithm>
+#include <cmath>
+#include <random>
 #define REVERSE_BYTES(x) __builtin_bswap32(x)
 
 constexpr int INPUT_SIZE = 784;
 constexpr int HIDDEN_SIZE = 128;
 constexpr int OUTPUT_SIZE = 10;
 
+std::vector<double>& randomizeVector(std::vector<double>& input, int layer);
 bool validateFileOpen(const std::ifstream& input);
 double relu(double input);
 
@@ -74,16 +77,23 @@ int main() {
     // start on the feedforward
 
     // layer 1
-    std::vector<double> layer1(HIDDEN_SIZE, 0.1);
+    std::vector<double> layer1(HIDDEN_SIZE, 0.0);
     std::vector<std::vector<double>> weight1(
-        HIDDEN_SIZE, std::vector<double>(INPUT_SIZE, 0.1));
-    std::vector<double> bias1(HIDDEN_SIZE, 0.1);
+        HIDDEN_SIZE, std::vector<double>(INPUT_SIZE, 0.0));
+    std::vector<double> bias1(HIDDEN_SIZE, 0.0);
 
     // layer 2
-    std::vector<double> output_layer(OUTPUT_SIZE, 0.1);
+    std::vector<double> output_layer(OUTPUT_SIZE, 0.0);
     std::vector<std::vector<double>> weight2(
-        OUTPUT_SIZE, std::vector<double>(HIDDEN_SIZE, 0.01));
-    std::vector<double> bias2(OUTPUT_SIZE, 0.1);
+        OUTPUT_SIZE, std::vector<double>(HIDDEN_SIZE, 0.0));
+    std::vector<double> bias2(OUTPUT_SIZE, 0.0);
+
+    for (auto& row : weight1) {
+        randomizeVector(row, 1);
+    }
+    for (auto& row : weight2) {
+        randomizeVector(row, 2);
+    }
 
 
     // normalize the image vector to doubles
@@ -92,11 +102,28 @@ int main() {
     for (uint32_t i = 0; i < pixels_per_image; i++) {
         x[i] = static_cast<double>(image_vector[0][i]) / 255.0;
     }
-
-    for (uint32_t i = 0; i < pixels_per_image; i++) {
-        std::cout << x[i] << '\n';
-    }
     
+
+    // forward pass layer 1
+    for (int row = 0; row < HIDDEN_SIZE; row++) {
+        double weighted_sum =  bias1[row];
+        for (int col = 0; col < INPUT_SIZE; col++) {
+            weighted_sum += x[col] * weight1[row][col];
+        }
+        layer1[row] = relu(weighted_sum);
+    }
+
+    // forward pass layer 2
+    for (int row = 0; row < OUTPUT_SIZE; row++) {
+        double weighted_sum = bias2[row];
+        for (int col = 0; col < HIDDEN_SIZE; col++) {
+            weighted_sum += layer1[col] * weight2[row][col];
+        }
+        output_layer[row] = weighted_sum;
+    }
+    for (auto num : output_layer) {
+        std::cout << num << '\n'; 
+    }
     return 0;
 }
 
@@ -109,4 +136,27 @@ bool validateFileOpen(const std::ifstream& input) {
 
 double relu(double input) {
     return std::max(0.0,input);
+}
+
+std::vector<double>& randomizeVector(std::vector<double>& input, int layer) {
+    double limit;
+    if (layer == 1) {
+        // He init: uniform on [-sqrt(2/fan_in), sqrt(2/fan_in)], fan_in = 784
+        limit = std::sqrt(2.0 / INPUT_SIZE);
+    } else if (layer == 2) {
+        // He init: fan_in = 128
+        limit = std::sqrt(2.0 / HIDDEN_SIZE);
+    } else {
+        std::cerr << "randomizeVector: layer must be 1 or 2\n";
+        return input;
+    }
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> dis(-limit, limit);
+
+    for (auto& num : input) {
+        num = dis(gen);
+    }
+    return input;
 }
