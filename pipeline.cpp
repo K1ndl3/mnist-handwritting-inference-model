@@ -140,7 +140,15 @@ int main() {
         probs[k] = probs[k] / sum_exponents;
     }
     
+    // cross entropy
     double loss = -(std::log(probs[label_value] + 1e-15));
+    std::vector<double> delta2(OUTPUT_SIZE, 0.0);
+    for (int k = 0; k < OUTPUT_SIZE; k++) {
+        delta2[k] = probs[k];
+        if (k == label_value) {
+            delta2[k] -= 1.0;
+        }
+    }
 
     return 0;
 }
