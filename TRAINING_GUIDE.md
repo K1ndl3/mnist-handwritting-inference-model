@@ -58,9 +58,9 @@ layer1[row] = relu(weighted_sum);
 **0c.** Add softmax + gradient buffers (per image, inside `im` loop or reused):
 
 ```cpp
-std::vector<double> probs(OUTPUT_SIZE, 0.0);
-std::vector<double> delta2(OUTPUT_SIZE, 0.0);
-std::vector<double> delta1(HIDDEN_SIZE, 0.0);
+std::vector<double> probs(OUTPUT_SIZE, 0.0); // this is softmax
+std::vector<double> delta2(OUTPUT_SIZE, 0.0); // gradient 2
+std::vector<double> delta1(HIDDEN_SIZE, 0.0); // gradient 1
 ```
 
 **0d.** Get the true label for this image:
