@@ -98,13 +98,16 @@ int main() {
     for (uint32_t i = 0; i < pixels_per_image; i++) {
         x[i] = static_cast<double>(image_vector[im][i]) / 255.0;
     }
-
+    
+    // z1 for backprop of the hidden layer
+    std::vector<double> z1(HIDDEN_SIZE);
     // forward pass layer 1
     for (int row = 0; row < HIDDEN_SIZE; row++) {
         double weighted_sum =  bias1[row];
         for (int col = 0; col < INPUT_SIZE; col++) {
             weighted_sum += x[col] * weight1[row][col];
         }
+        z1[row] = weighted_sum;
         layer1[row] = relu(weighted_sum);
     }
     // forward pass layer 2
@@ -116,6 +119,27 @@ int main() {
         output_layer[row] = weighted_sum;
     }
 
+
+    // implement softmax
+    std::vector<double> probs(10,0.0);
+    uint8_t label_value = label_vector[im];
+
+    // use max-logits trick to stop overflow
+    double max_logits = output_layer[0];
+    for (int k = 1; k < OUTPUT_SIZE; k++) {
+        if (output_layer[k] > max_logits)
+            max_logits = output_layer[k];
+    }
+    double sum_exponents = 0;
+    for (int k = 0; k < OUTPUT_SIZE; k++) {
+        probs[k] = std::exp(output_layer[k] - max_logits);
+        sum_exponents += probs[k];
+    }
+
+    for (int k = 0; k < OUTPUT_SIZE; k++) {
+        probs[k] = probs[k] / sum_exponents;
+    }
+    
     return 0;
 }
 
