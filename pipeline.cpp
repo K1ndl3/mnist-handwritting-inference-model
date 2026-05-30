@@ -140,6 +140,8 @@ int main() {
         probs[k] = probs[k] / sum_exponents;
     }
     
+    double loss = -(std::log(probs[label_value] + 1e-15));
+
     return 0;
 }
 
