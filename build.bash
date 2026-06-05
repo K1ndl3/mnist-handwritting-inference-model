@@ -1,3 +1,3 @@
-g++ -Wall pipeline.cpp -o pipeline
+g++ -Wall personal.cpp
 
 
