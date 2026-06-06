@@ -12,9 +12,13 @@ constexpr int INPUT_SIZE = 784;
 constexpr int NUM_EPOCH = 100;
 
 bool validateFileOpen(const std::ifstream& input);
+
 void randomizeVector(std::vector<double>& input);
 void randomizedMatrix(std::vector<std::vector<double>>& input);
+
 double sigmoid(double z);
+
+std::vector<double> gradientCalc(std::vector<double>& a, double label);
 std::vector<double> forwardPass(std::vector<double> layer,
                                 std::vector<std::vector<double>> weight, std::vector<double> bias,bool final = false);
 
@@ -169,3 +173,4 @@ std::vector<double> forwardPass(std::vector<double> layer,
 double sigmoid(double z) {
     return 1 / (1 + std::exp(-z));
 }
+
