@@ -21,6 +21,14 @@ double sigmoid(double z);
 
 std::vector<double> gradientCalc(std::vector<double>& a,std::vector<std::vector<double>>& weight,std::vector<double> prev_layer, double label, double r);
 std::vector<double> gradientBias(std::vector<double>& a, std::vector<double>& bias, double label, double r);
+std::vector<double> backpropLayer(
+    const std::vector<double>& delta_in,
+    const std::vector<std::vector<double>>& W_above,
+    std::vector<std::vector<double>>& W_curr,
+    std::vector<double>& bias,
+    const std::vector<double>& a_curr,
+    const std::vector<double>& a_prev,
+    double lr);
 std::vector<double> forwardPass(std::vector<double> layer,
                                 std::vector<std::vector<double>> weight, std::vector<double> bias,bool final = false);
 
@@ -98,16 +106,19 @@ int main() {
     std::vector<double> a1(100, 0.0);
     std::vector<std::vector<double>> w1(100, std::vector<double>(784, 0.0));
     std::vector<double> b1(100,0.0);
+    std::vector<double> delta1(100, 0.0);  // matches a1 / w1 rows
 
     std::vector<double> a2(50, 0.0);
     std::vector<std::vector<double>> w2(50, std::vector<double>(100, 0.0));
     std::vector<double> b2(50,0.0);
+    std::vector<double> delta2(50, 0.0);   // matches a2 / w2 rows
 
     std::vector<double> a3(10, 0.0);
     std::vector<std::vector<double>> w3(10, std::vector<double>(50, 0.0));
     std::vector<double> b3(10,0.0);
     std::vector<double> delta3w(10,0.0);
     std::vector<double> delta3b(10,0.0);
+
 
     bool final_layer = true;
 
@@ -135,6 +146,8 @@ int main() {
             delta3w = gradientCalc(a3, w3, a2, double(y), LEARNING_RATE);
             delta3b = gradientBias(a3, b3, y, LEARNING_RATE);
 
+            delta2 = backpropLayer(delta3w, w3, w2, b2, a2, a1, LEARNING_RATE);
+            delta1 = backpropLayer(delta2, w2, w1, b1, a1, x[im], LEARNING_RATE);
         }
     }
 
@@ -213,5 +226,34 @@ std::vector<double> gradientBias(std::vector<double>& a, std::vector<double>& bi
     }
 
     return grad;
+}
+
+std::vector<double> backpropLayer(
+    const std::vector<double>& delta_in,
+    const std::vector<std::vector<double>>& W_above,
+    std::vector<std::vector<double>>& W_curr,
+    std::vector<double>& bias,
+    const std::vector<double>& a_curr,
+    const std::vector<double>& a_prev,
+    double lr) {
+        std::vector<double> delta_out(W_curr.size(), 0.0);
+        // Step 1: propagate delta backward through W_above
+        // delta_out[j] = sum_k delta_in[k] * W_above[k][j]
+        for (int j = 0; j < W_curr.size(); j++) {
+            double sum = 0.0;
+            for (int k = 0; k < delta_in.size(); k++) {
+                sum += delta_in[k] * W_above[k][j];
+            }
+            // Step 2: through sigmoid derivative
+            delta_out[j] = sum * a_curr[j] * (1.0 - a_curr[j]);
+        }
+        // Step 3: update W_curr and bias (same pattern as gradientCalc)
+        for (int j = 0; j < W_curr.size(); j++) {
+            bias[j] -= lr * delta_out[j];
+            for (int i = 0; i < W_curr[0].size(); i++) {
+                W_curr[j][i] -= lr * delta_out[j] * a_prev[i];
+            }
+        }
+        return delta_out;
 }
 
