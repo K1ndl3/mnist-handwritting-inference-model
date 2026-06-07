@@ -7,6 +7,7 @@
 #include <vector>
 
 #define REVERSE_BYTES(x) __builtin_bswap32(x)
+#define LEARNING_RATE .1
 
 constexpr int INPUT_SIZE = 784;
 constexpr int NUM_EPOCH = 100;
@@ -18,7 +19,8 @@ void randomizedMatrix(std::vector<std::vector<double>>& input);
 
 double sigmoid(double z);
 
-std::vector<double> gradientCalc(std::vector<double>& a, double label);
+std::vector<double> gradientCalc(std::vector<double>& a,std::vector<std::vector<double>>& weight,std::vector<double> prev_layer, double label, double r);
+std::vector<double> gradientBias(std::vector<double>& a, std::vector<double>& bias, double label, double r);
 std::vector<double> forwardPass(std::vector<double> layer,
                                 std::vector<std::vector<double>> weight, std::vector<double> bias,bool final = false);
 
@@ -104,6 +106,9 @@ int main() {
     std::vector<double> a3(10, 0.0);
     std::vector<std::vector<double>> w3(10, std::vector<double>(50, 0.0));
     std::vector<double> b3(10,0.0);
+    std::vector<double> delta3w(10,0.0);
+    std::vector<double> delta3b(10,0.0);
+
     bool final_layer = true;
 
 
@@ -118,12 +123,17 @@ int main() {
 
     for (int epoch = 0; epoch < NUM_EPOCH; epoch++) {
         for (int im = 0; im < 60000; im++) {
+            int y = label_vector[im];
             // layer1
             a1 = forwardPass(x[im], w1, b1);
             // layer2
             a2 = forwardPass(a1, w2, b2);
             // output
             a3 = forwardPass(a2, w3, b3, final_layer);
+
+            //gradient descent and backprop
+            delta3w = gradientCalc(a3, w3, a2, double(y), LEARNING_RATE);
+            delta3b = gradientBias(a3, b3, y, LEARNING_RATE);
 
         }
     }
@@ -172,5 +182,36 @@ std::vector<double> forwardPass(std::vector<double> layer,
 
 double sigmoid(double z) {
     return 1 / (1 + std::exp(-z));
+}
+
+std::vector<double> gradientCalc(std::vector<double>& a, std::vector<std::vector<double>>& weight, std::vector<double> prev_layer ,double label, double r) {
+    std::vector<double> grad(a.size(), 0.0);
+    // this part finishes dl/da3
+    for (int i = 0; i < a.size(); i++) {
+        double y_val = (i == label) ? 1.0 : 0.0;
+        grad[i] = a[i] - y_val;
+    }
+
+    // this part will do the outer product
+    for (int row = 0; row < weight.size(); row++) {
+        for (int col = 0; col < weight[0].size(); col++) {
+            weight[row][col] -= r * grad[row] * prev_layer[col];
+        }
+    }
+    return grad;
+}
+
+std::vector<double> gradientBias(std::vector<double>& a, std::vector<double>& bias, double label, double r) {
+    std::vector<double> grad(a.size(), 0.0);
+    // this part finishes dl/da3
+    for (int i = 0; i < a.size(); i++) {
+        double y_val = (i == label) ? 1.0 : 0.0;
+        grad[i] = a[i] - y_val;
+    }
+    for (int i = 0; i < bias.size(); i++) {
+        bias[i] -= r * grad[i];
+    }
+
+    return grad;
 }
 
