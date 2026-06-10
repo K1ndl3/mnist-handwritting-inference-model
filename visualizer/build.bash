@@ -1,1 +1,1 @@
-g++ main.cpp -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -o main
+g++ main.cpp DrawingGrid/DrawingGrid.cpp -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -o main
