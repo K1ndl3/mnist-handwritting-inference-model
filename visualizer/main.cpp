@@ -21,7 +21,10 @@ int main(void)
         grid.input(GRID_X_OFFSET, GRID_Y_OFFSET);
         grid.DrawingGrid::draw(GRID_X_OFFSET, GRID_Y_OFFSET);
         submit_btn.draw(grid.getWidth() + GRID_X_OFFSET, GRID_Y_OFFSET, 10);
-        submit_btn.submit();
+        
+        if (submit_btn.submit()) {
+            
+        }
         EndDrawing();
     }
 

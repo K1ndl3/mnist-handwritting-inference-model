@@ -11,7 +11,7 @@ void SubmitButton::draw(int offsetX, int offsetY, int padding) {
     DrawText("Submit", offsetX + padding, offsetY, 95, BLACK);
 }
 
-void SubmitButton::submit() {
+bool SubmitButton::submit() {
     int left = _posX;
     int right = _posX + _width;
     int top = _posY;
@@ -21,8 +21,12 @@ void SubmitButton::submit() {
     int mouseY = mousePos.y; 
     if (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom) {
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            _isSubmit = !_isSubmit;
+            _isSubmit = true;
             std::cout << "submitted\n";
+            return true;
+        } else {
+            _isSubmit = false;
+            return false;
         }
     } 
 }

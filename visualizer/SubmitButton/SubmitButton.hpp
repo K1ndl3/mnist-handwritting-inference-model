@@ -20,5 +20,5 @@ public:
     inline void setWidth(int width) {_width = width; };
 
     void draw(int offsetX, int offsetY, int padding);
-    void submit();
+    bool submit();
 };
