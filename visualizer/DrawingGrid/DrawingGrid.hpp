@@ -7,7 +7,7 @@
 
 class DrawingGrid {
     
-    private:
+private:
     int width = NUM_ROWS * CELL_SIZE;
     int heigth = NUM_COLS * CELL_SIZE;
     std::vector<std::vector<int>> _grid;
