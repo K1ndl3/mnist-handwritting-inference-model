@@ -20,9 +20,9 @@ private:
     std::vector<double> a2;
     std::vector<double> a3;
 public:
-    ModelNN(std::vector<double> input) : input_normalized(input) {
-
-    }    
+    ModelNN() {};
+    
+    void setInput(const std::vector<double>& input);
 
     bool loadModel(const std::string& path);
 

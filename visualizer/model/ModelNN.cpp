@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cmath>
 
-bool loadVector(std::ifstream& in, std::vector<double>& vec) {
+bool ModelNN::loadVector(std::ifstream& in, std::vector<double>& vec) {
     int n = 0;
     if (!(in >> n)) {
         return false;
@@ -18,7 +18,7 @@ bool loadVector(std::ifstream& in, std::vector<double>& vec) {
     return true;
 }
 
-bool loadMatrix(std::ifstream& in, std::vector<std::vector<double>>& matrix) {
+bool ModelNN::loadMatrix(std::ifstream& in, std::vector<std::vector<double>>& matrix) {
     int rows = 0;
     int cols = 0;
     if (!(in >> rows >> cols)) {
@@ -47,16 +47,18 @@ bool ModelNN::loadModel(const std::string& path) {
         !loadMatrix(params_data, w2) || !loadVector(params_data, b2) ||
         !loadMatrix(params_data, w3) || !loadVector(params_data, b3)) {
         std::cerr << "Failed to load trained parameters\n";
-        return 1;
+        return false;
     }
     return true;
 }
 
 
 int ModelNN::argMax(const std::vector<double>& outputLayer) {
-    int best = outputLayer[0];
+    int best = 0;
     for (int i = 1; i < outputLayer.size(); i++) {
-        if (outputLayer[i] > best) best = outputLayer[i];
+        if (outputLayer[i] > outputLayer[best]) {
+            best = i;
+        }
     }
     return best;
 }
@@ -84,17 +86,21 @@ int ModelNN::inference() {
         }
         a2[row] = sigmoid(w_sum);
     }
-    // w3 has dimensions: 10x50 since a2 has dimensions: 50x1
+    // w3 has dimensions: 10x50 since a2 has dimensions: 50x1 (no sigmoid on output layer)
     for (int row = 0; row < w3.size(); row++) {
         double w_sum = b3[row];
         for (int col = 0; col < w3[0].size(); col++) {
-            w_sum += a3[row] * w3[row][col];
+            w_sum += a2[col] * w3[row][col];
         }
+        a3[row] = w_sum;
     }
-    // call softmax on a3
     return argMax(a3);
 }
 
 double ModelNN::sigmoid(double z) {
     return (1) / (1 + std::exp(-z));
+}
+
+void ModelNN::setInput(const std::vector<double>& input) {
+    input_normalized = input;
 }
