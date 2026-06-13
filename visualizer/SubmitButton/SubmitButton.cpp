@@ -28,5 +28,6 @@ bool SubmitButton::submit() {
             _isSubmit = false;
             return false;
         }
-    } 
+    }
+    return false;
 }

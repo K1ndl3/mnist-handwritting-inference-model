@@ -1,6 +1,7 @@
 #include "SubmitButton/SubmitButton.hpp"
-#include "raylib.h"
 #include "DrawingGrid/DrawingGrid.hpp"
+#include "model/ModelNN.hpp"
+#include "raylib.h"
 
 #define GRID_X_OFFSET 10
 #define GRID_Y_OFFSET 10
@@ -9,7 +10,8 @@
 int main(void)
 {
     DrawingGrid grid;
-    SubmitButton submit_btn;   
+    SubmitButton submit_btn; 
+    
     InitWindow(900, 600, "MNIST Handwritting Predictor");
     SetTargetFPS(60);
 
