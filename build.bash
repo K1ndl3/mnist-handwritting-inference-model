@@ -1,3 +1,0 @@
-g++ -Wall personal.cpp
-
-

@@ -1,16 +1,22 @@
 #include <cmath>
 #include <cstdint>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <ostream>
 #include <random>
 #include <string>
 #include <vector>
 
 #define REVERSE_BYTES(x) __builtin_bswap32(x)
-#define LEARNING_RATE .1
+#define LEARNING_RATE .01
 
 constexpr int INPUT_SIZE = 784;
-constexpr int NUM_EPOCH = 100;
+constexpr int NUM_EPOCH = 6;
+
+void saveVector(std::ostream& out,const std::vector<double>& vec);
+void saveMatrix(std::ostream& out, const std::vector<std::vector<double>>& matrix);
+
 
 bool validateFileOpen(const std::ifstream& input);
 
@@ -33,8 +39,8 @@ std::vector<double> forwardPass(std::vector<double> layer,
                                 std::vector<std::vector<double>> weight, std::vector<double> bias,bool final = false);
 
 int main() {
-    const std::string train_label = "./dataset/train-labels.idx1-ubyte";
-    const std::string train_images = "./dataset/train-images.idx3-ubyte";
+    const std::string train_label = "../dataset/train-labels.idx1-ubyte";
+    const std::string train_images = "../dataset/train-images.idx3-ubyte";
 
     std::ifstream label_data(train_label, std::ios::binary);
     std::ifstream image_data(train_images, std::ios::binary);
@@ -133,7 +139,10 @@ int main() {
     randomizeVector(b3);
 
     for (int epoch = 0; epoch < NUM_EPOCH; epoch++) {
+        std::cout << "Epoch: " << epoch << "\n\n\n";
         for (int im = 0; im < 60000; im++) {
+        std::cout << "image: " << im <<'\n';
+
             int y = label_vector[im];
             // layer1
             a1 = forwardPass(x[im], w1, b1);
@@ -150,6 +159,18 @@ int main() {
             delta1 = backpropLayer(delta2, w2, w1, b1, a1, x[im], LEARNING_RATE);
         }
     }
+    std::ofstream outFile("./trained_params.txt");
+
+    saveMatrix(outFile, w1);
+    saveVector(outFile, b1);
+
+
+    saveMatrix(outFile, w2);
+    saveVector(outFile, b2);
+
+
+    saveMatrix(outFile, w3);
+    saveVector(outFile, b3);
 
     return 0;
 }
@@ -161,7 +182,7 @@ bool validateFileOpen(const std::ifstream& input) {
 void randomizeVector(std::vector<double>& input) {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<double> dis(0.0, 1.0);
+    std::uniform_real_distribution<double> dis(-0.1, 0.1);
 
     for (auto& num : input) {
         num = dis(gen);
@@ -255,5 +276,29 @@ std::vector<double> backpropLayer(
             }
         }
         return delta_out;
+}
+
+void saveVector(std::ostream& out, const std::vector<double>& vec) {
+    out << vec.size() << '\n';
+    for (int i = 0; i < vec.size(); i++) {
+        if (i != 0) {
+            out << ' ';
+        }
+        out << std::setprecision(17) << vec[i];
+    }
+    out << '\n';
+}
+
+void saveMatrix(std::ostream& out, const std::vector<std::vector<double>>& matrix) {
+    out << matrix.size() << ' ' << matrix[0].size() << '\n';
+    for (const auto& row : matrix) {
+        for (size_t i = 0; i < row.size(); i++) {
+            if (i > 0) {
+                out << ' ';
+            }
+            out << std::setprecision(17) << row[i];
+        }
+        out << '\n';
+    }
 }
 
